@@ -14,8 +14,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "hcourse_of_action")
 public class HCourseOfAction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -109,5 +111,9 @@ public class HCourseOfAction {
 	}
 	public void setHedonicValue() {
         this.hedonicValue = UtilityFunctions.calculateHedonicValue(this);
+    }
+	
+	public void setEvent(HEvent event) {
+        this.event = event;
     }
 }
