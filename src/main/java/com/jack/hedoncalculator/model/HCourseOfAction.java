@@ -1,23 +1,15 @@
 package com.jack.hedoncalculator.model;
 
 import java.time.LocalDateTime;
-
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
+import com.fasterxml.jackson.annotation.*;
 import com.jack.hedoncalculator.util.UtilityFunctions;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "hcourse_of_action")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HCourseOfAction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,19 +24,29 @@ public class HCourseOfAction {
     private double purity;
     private double extent;
     private boolean isPublic;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Double hedonicValue;
     
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
+    @JsonIgnore
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
+    @JsonIgnore
     private LocalDateTime updatedAt;
     
     @ManyToOne
     @JoinColumn(name = "event_id")
+    @JsonBackReference
     private HEvent event;
+    
+    public HCourseOfAction() {
+        this.hedonicValue = null;
+    }
+
     
 	public Long getId() {
 		return id;
@@ -113,7 +115,20 @@ public class HCourseOfAction {
         this.hedonicValue = UtilityFunctions.calculateHedonicValue(this);
     }
 	
-	public void setEvent(HEvent event) {
-        this.event = event;
-    }
+	 @PrePersist
+	    @PreUpdate
+	    public void calculateHedonicValue() {
+	        this.hedonicValue = UtilityFunctions.calculateHedonicValue(this);
+	    }
+
+	    @JsonIgnore
+	    public HEvent getEvent() {
+	        return event;
+	    }
+
+	    @JsonProperty
+	    public void setEvent(HEvent event) {
+	        this.event = event;
+	    }
+	
 }

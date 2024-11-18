@@ -50,7 +50,7 @@ public class HEventService {
             newCourses.add(newCourse);
         }
         
-        newEvent.setCoursesOfAction(newCourses);
+        newEvent.setCoursesOfActionFromJson(newCourses);
         newEvent.updateIdealCourse();
         
         return hEventRepository.save(newEvent);
@@ -77,7 +77,7 @@ public class HEventService {
                     updatedCourse.setEvent(existingEvent);
                     updatedCourses.add(updatedCourse);
                 }
-                existingEvent.setCoursesOfAction(updatedCourses);
+                existingEvent.setCoursesOfActionFromJson(updatedCourses);
                 existingEvent.updateIdealCourse();
                 return hEventRepository.save(existingEvent);
             });

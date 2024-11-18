@@ -29,6 +29,7 @@ public class WebSecurityConfig {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/events/**").authenticated()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(uuidAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

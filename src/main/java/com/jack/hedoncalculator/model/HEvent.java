@@ -3,26 +3,16 @@ package com.jack.hedoncalculator.model;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
+import com.fasterxml.jackson.annotation.*;
 import com.jack.hedoncalculator.util.UtilityFunctions;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "hevent")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class HEvent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,18 +22,27 @@ public class HEvent {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "event_id")
+    @JsonManagedReference
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<HCourseOfAction> coursesOfAction = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private HCourseOfAction idealCourse;
     
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
+    @JsonIgnore
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
+    @JsonIgnore
     private LocalDateTime updatedAt;
+    
+    public HEvent() {
+        this.coursesOfAction = new ArrayList<>();
+    }
     
 	public Long getId() {
 		return id;
@@ -61,22 +60,30 @@ public class HEvent {
 		return coursesOfAction;
 	}
 
-	public void setCoursesOfAction(List<HCourseOfAction> coursesOfAction) {
-        this.coursesOfAction.clear();
-        if (coursesOfAction != null) {
-            for (HCourseOfAction course : coursesOfAction) {
-                course.setEvent(this);
-                this.coursesOfAction.add(course);
-            }
-        }
-        updateIdealCourse();
-    }
-	
-	public void addCourseOfAction(HCourseOfAction course) {
-        course.setEvent(this);
-        course.setHedonicValue();
-        this.coursesOfAction.add(course);
-    }
+	 @JsonProperty("coursesOfAction")
+	    public void setCoursesOfActionFromJson(List<HCourseOfAction> coursesOfAction) {
+	        this.coursesOfAction.clear();
+	        if (coursesOfAction != null) {
+	            coursesOfAction.forEach(this::addCourseOfAction);
+	        }
+	        updateIdealCourse();
+	    }
+
+	    public void addCourseOfAction(HCourseOfAction course) {
+	        if (course != null) {
+	            course.setEvent(this);
+	            course.setHedonicValue();
+	            this.coursesOfAction.add(course);
+	        }
+	    }
+
+	    @PrePersist
+	    @PreUpdate
+	    public void updateIdealCourse() {
+	        if (!this.coursesOfAction.isEmpty()) {
+	            this.idealCourse = UtilityFunctions.findIdealCourse(this.coursesOfAction);
+	        }
+	    }
 
 	public HCourseOfAction getIdealCourse() {
 		return idealCourse;
@@ -86,7 +93,5 @@ public class HEvent {
 		this.idealCourse = idealCourse;
 	}
 
-	public void updateIdealCourse() {
-        this.idealCourse = UtilityFunctions.findIdealCourse(this.coursesOfAction);
-    }
+	
 }
