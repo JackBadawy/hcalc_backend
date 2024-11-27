@@ -40,6 +40,13 @@ private static double formatVerboseDecimal(double value) {
     String[] parts = strValue.split("\\.");
     if (parts.length > 1 && parts[1].startsWith("000")) {
     	return (double)(int)value;
+    } else if (parts.length > 1 && parts[1].contains("00")) {
+    	String decimals = parts[1];
+    	int index = decimals.lastIndexOf("00");
+    	if (index >= 0) {
+    		String truncValue = parts[1] + "." + decimals.substring(0, index + 1);
+    		return Double.parseDouble(truncValue);
+    	}
     }
     return value;
 }
