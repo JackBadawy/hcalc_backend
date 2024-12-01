@@ -10,18 +10,33 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class HEventService {
     private final HEventRepository hEventRepository;
+    private final AuthService authService;
 
     @Autowired
-    public HEventService(HEventRepository hEventRepository) {
+    public HEventService(HEventRepository hEventRepository, AuthService authService) {
         this.hEventRepository = hEventRepository;
+        this.authService = authService;
     }
-
+    
     public List<HEvent> getAllEvents() {
         return hEventRepository.findAll();
+    }
+    
+    @Transactional(readOnly = true)
+    public List<HEvent> getUsersEvents(String sessionToken) {
+        UUID token = UUID.fromString(sessionToken);
+        String username = authService.getUsernameFromToken(token);
+        
+        if (username == null) {
+            throw new IllegalArgumentException("Invalid session token");
+        }
+        
+        return hEventRepository.findByCreatedBy(username);
     }
 
     public Optional<HEvent> getEventById(Long id) {
@@ -29,9 +44,19 @@ public class HEventService {
     }
 
     @Transactional
-    public HEvent addEvent(HEvent event) {
+    public HEvent addEvent(HEvent event, String sessionToken) {
+       
+        UUID token = UUID.fromString(sessionToken);
+        
+        
+        String username = authService.getUsernameFromToken(token);
+        if (username == null) {
+            throw new IllegalArgumentException("Invalid session token");
+        }
+
         HEvent newEvent = new HEvent();
         newEvent.setDescription(event.getDescription());
+        newEvent.setCreatedBy(username);
         
         List<HCourseOfAction> newCourses = new ArrayList<>();
         for (HCourseOfAction course : event.getCoursesOfAction()) {
@@ -57,9 +82,22 @@ public class HEventService {
     }
 
     @Transactional
-    public Optional<HEvent> updateEvent(Long id, HEvent eventDetails) {
+    public Optional<HEvent> updateEvent(Long id, HEvent eventDetails, String sessionToken) {
+      
+        UUID token = UUID.fromString(sessionToken);
+        
+        String username = authService.getUsernameFromToken(token);
+        if (username == null) {
+            throw new IllegalArgumentException("Invalid session token");
+        }
+
         return hEventRepository.findById(id)
             .map(existingEvent -> {
+               
+                if (!username.equals(existingEvent.getCreatedBy())) {
+                    throw new IllegalArgumentException("User not authorized to update this event");
+                }
+
                 existingEvent.setDescription(eventDetails.getDescription());
                 List<HCourseOfAction> updatedCourses = new ArrayList<>();
                 for (HCourseOfAction course : eventDetails.getCoursesOfAction()) {
@@ -82,7 +120,7 @@ public class HEventService {
                 return hEventRepository.save(existingEvent);
             });
     }
-
+    
     public boolean deleteEvent(Long id) {
         return hEventRepository.findById(id)
             .map(event -> {
@@ -91,4 +129,5 @@ public class HEventService {
             })
             .orElse(false);
     }
+    
 }

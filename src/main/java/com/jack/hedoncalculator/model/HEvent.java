@@ -30,6 +30,9 @@ public class HEvent {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private HCourseOfAction idealCourse;
     
+    @Column
+    private String createdBy;
+    
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     @JsonIgnore
@@ -93,5 +96,12 @@ public class HEvent {
 		this.idealCourse = idealCourse;
 	}
 
-	
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
 }

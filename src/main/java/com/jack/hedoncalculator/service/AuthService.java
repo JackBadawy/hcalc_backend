@@ -49,4 +49,9 @@ public class AuthService {
         newUser.setPassword(passwordEncoder.encode(rawPassword));
         return userRepository.save(newUser);
     }
+    
+    public String getUsernameFromToken(UUID sessionToken) {
+        Optional<User> userOpt = userRepository.findBySessionToken(sessionToken);
+        return userOpt.map(User::getUsername).orElse(null);
+    }
 }

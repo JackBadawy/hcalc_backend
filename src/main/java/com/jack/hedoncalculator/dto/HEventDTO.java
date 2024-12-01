@@ -7,9 +7,8 @@ public class HEventDTO {
     private String description;
     private List<HCourseOfActionDTO> coursesOfAction;
     private HCourseOfActionDTO idealCourse;
-    
-    
-    
+    private String createdBy;
+	
 	public Long getId() {
 		return id;
 	}
@@ -33,6 +32,12 @@ public class HEventDTO {
 	}
 	public void setIdealCourse(HCourseOfActionDTO idealCourse) {
 		this.idealCourse = idealCourse;
+	}
+	public String getCreatedBy() {
+		return createdBy;
+	}
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
 	}
 
     
