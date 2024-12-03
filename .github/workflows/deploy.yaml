@@ -62,4 +62,9 @@ jobs:
               DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
               SSL_KEY_STORE_PASSWORD=${{ secrets.SSL_KEY_STORE_PASSWORD }} \
               JAVA_TOOL_OPTIONS="-verbose:class -XX:+PrintCommandLineFlags" \
+      - name: Get container logs on failure
+        if: failure()
+        run: |
+          echo "Getting container logs..."
+          az container logs --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.CONTAINER_NAME }} 
            
