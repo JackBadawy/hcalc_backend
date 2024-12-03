@@ -55,10 +55,11 @@ jobs:
             --dns-name-label ${{ env.CONTAINER_NAME }} \
             --ports 8080 \
             --protocol TCP \
+            --os-type Linux \
             --environment-variables \
               DB_URL=${{ secrets.DB_URL }} \
               DB_USERNAME=${{ secrets.DB_USERNAME }} \
               DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
               SSL_KEY_STORE_PASSWORD=${{ secrets.SSL_KEY_STORE_PASSWORD }} \
               JAVA_TOOL_OPTIONS="-verbose:class -XX:+PrintCommandLineFlags" \
-            --restart-policy Never
+           
