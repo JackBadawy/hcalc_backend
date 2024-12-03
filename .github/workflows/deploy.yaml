@@ -58,12 +58,12 @@ jobs:
               --os-type Linux \
               --cpu 1 \
               --memory 1.5 \
-              --secure-environment-variables \
-                DB_URL="${{ secrets.DB_URL }}" \
-                DB_USERNAME="${{ secrets.DB_USERNAME }}" \
-                DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
-                SSL_KEY_STORE_PASSWORD="${{ secrets.SSL_KEY_STORE_PASSWORD }}" \
-                'JAVA_TOOL_OPTIONS=-verbose:class -XX:+PrintCommandLineFlags'
+              --environment-variables \
+              DB_URL="${{ secrets.DB_URL }}" \
+              DB_USERNAME="${{ secrets.DB_USERNAME }}" \
+              DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+              SSL_KEY_STORE_PASSWORD="${{ secrets.SSL_KEY_STORE_PASSWORD }}" \
+              JAVA_TOOL_OPTIONS="-verbose:class -XX:+PrintCommandLineFlags"
 
       - name: Get container logs on failure
         if: failure()
