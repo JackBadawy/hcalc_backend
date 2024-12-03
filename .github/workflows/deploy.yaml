@@ -9,6 +9,7 @@ env:
   AZURE_CONTAINER_REGISTRY: employeerepodemoacr.azurecr.io
   CONTAINER_NAME: hcalc
   RESOURCE_GROUP: EmployeeRepositoryDemo
+  APP_NAME: HedonicCalculator
 
 jobs:
   build-and-push:
@@ -42,32 +43,25 @@ jobs:
         run: |
           docker build -t ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.CONTAINER_NAME }}:latest .
           docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.CONTAINER_NAME }}:latest
-  
-      - name: Deploy to Azure Container Instance
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.APP_NAME }}
+          images: ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.CONTAINER_NAME }}:latest
+
+      - name: Configure App Settings
         run: |
-          az container create \
+          az webapp config appsettings set --name ${{ env.APP_NAME }} \
             --resource-group ${{ env.RESOURCE_GROUP }} \
-            --name ${{ env.CONTAINER_NAME }} \
-            --image ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.CONTAINER_NAME }}:latest \
-            --registry-login-server ${{ env.AZURE_CONTAINER_REGISTRY }} \
-            --registry-username ${{ secrets.REGISTRY_USERNAME }} \
-            --registry-password ${{ secrets.REGISTRY_PASSWORD }} \
-            --dns-name-label ${{ env.CONTAINER_NAME }} \
-            --ports 8080 \
-            --protocol TCP \
-            --os-type Linux \
-            --cpu 1 \
-            --memory 1.5 \
-            --restart-policy OnFailure \
-            --environment-variables \
+            --settings \
             DB_URL="${{ secrets.DB_URL }}" \
             DB_USERNAME="${{ secrets.DB_USERNAME }}" \
             DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
-            SSL_KEY_STORE_PASSWORD="${{ secrets.SSL_KEY_STORE_PASSWORD }}" \
             JAVA_TOOL_OPTIONS="-verbose:class -XX:+PrintCommandLineFlags"
 
-      - name: Get container logs on failure
+      - name: Get Web App logs on failure
         if: failure()
         run: |
-          echo "Getting container logs..."
-          az container logs --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.CONTAINER_NAME }}
+          echo "Getting web app logs..."
+          az webapp log tail --name ${{ env.APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }}

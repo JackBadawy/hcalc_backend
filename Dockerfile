@@ -9,13 +9,12 @@ RUN mkdir /app && chown mainuser:mainuser /app
 
 WORKDIR /app
 
-# Copy the jar and keystore files
+# Copy the jar file
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} app.jar
-COPY src/main/resources/keystore.p12 /app/keystore.p12
 
-# Set ownership of the files
-RUN chown mainuser:mainuser /app/app.jar /app/keystore.p12
+# Set ownership of the file
+RUN chown mainuser:mainuser /app/app.jar
 
 # Switch to non-root user
 USER mainuser
@@ -33,9 +32,9 @@ ENV JAVA_TOOL_OPTIONS="\
 # Use port 8080
 EXPOSE 8080
 
-# Add healthcheck (using localhost since we're checking from inside the container)
+# Add healthcheck (changed to HTTP since we're not using SSL anymore)
 HEALTHCHECK --interval=30s --timeout=3s \
-  CMD curl --fail -k https://0.0.0.0:8080/api/auth/health || exit 1
+  CMD curl --fail http://0.0.0.0:8080/api/auth/health || exit 1
 
 # Run with verbose options
 ENTRYPOINT ["java", "-jar", \
