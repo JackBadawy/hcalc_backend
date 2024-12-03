@@ -58,6 +58,7 @@ jobs:
             --os-type Linux \
             --cpu 1 \
             --memory 1.5 \
+            --restart-policy Never \
             --environment-variables \
             DB_URL="${{ secrets.DB_URL }}" \
             DB_USERNAME="${{ secrets.DB_USERNAME }}" \
