@@ -21,12 +21,33 @@ public class WebSecurityConfig {
     @Autowired
     private UUIDAuthenticationFilter uuidAuthenticationFilter;
 
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http
+//            .cors().and()
+//            .csrf().disable()
+//            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+//            .authorizeHttpRequests((requests) -> requests
+//                .requestMatchers("/api/auth/**").permitAll()
+//                .requestMatchers("/api/events/**").authenticated()
+//                .anyRequest().authenticated()
+//            )
+//            .addFilterBefore(uuidAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//    }
+    
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .requiresChannel()
+            .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
+            .requiresSecure()
+            .and()
             .cors().and()
             .csrf().disable()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/events/**").authenticated()
